@@ -1,6 +1,9 @@
 package com.ronit.volumeknob
 
+import android.content.Context
+import android.media.AudioManager
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,6 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             Box(
                 contentAlignment = Alignment.Center,
@@ -57,6 +62,8 @@ class MainActivity : ComponentActivity() {
                     .fillMaxSize()
                     .background(Color(0xFF101010))
             ) {
+                val context = LocalContext.current
+                val audioManager: AudioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -67,6 +74,16 @@ class MainActivity : ComponentActivity() {
                     var volume by remember {
                         mutableStateOf(0f)
                     }
+                    val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+
+                    val targetVolume = (volume * maxVolume ).toInt()
+                    Log.d("TAG", "onCreate: $volume")
+                    audioManager.setStreamVolume(
+                        AudioManager.STREAM_MUSIC,
+                        targetVolume,
+                        0
+                    )
+
                     val barCount = 20
                     MusicKnob(
                         modifier = Modifier.size(100.dp)
